@@ -81,3 +81,9 @@ dkms.conf
 
 # End of https://www.toptal.com/developers/gitignore/api/c,c++
 Debug
+.vscode
+SZWA Debug*
+STM32L476VGTX_RAM.ld
+STM32L476VGTX_FLASH.ld
+Middlewares/
+Drivers/
