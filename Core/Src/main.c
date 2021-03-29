@@ -97,8 +97,10 @@ int main(void)
   MX_USART2_UART_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+  RTC_TimeTypeDef rtcTime = {};
 
-  RTC_TimeTypeDef RtcTime = {};
+  HAL_RTC_Init(&hrtc);
+  HAL_RTC_SetTime(&hrtc, &rtcTime, RTC_FORMAT_BCD);
 
   /* USER CODE END 2 */
 
@@ -106,9 +108,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
+
+		HAL_RTC_GetTime(&hrtc, &rtcTime, RTC_FORMAT_BIN);
 		HAL_Delay(1000);
-		printf("Time: %02d:%02d:%02d\n\r", RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds);
+		printf("Time: %02d:%02d:%02d\n\r", rtcTime.Hours, rtcTime.Minutes, rtcTime.Seconds);
 
     /* USER CODE END WHILE */
 
