@@ -27,7 +27,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include "flash.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +63,9 @@ int _write(int file, char *ptr, int len) {
 	HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, 50);
 	return len;
 }
+
+
+
 /* USER CODE END 0 */
 
 /**
@@ -71,7 +75,8 @@ int _write(int file, char *ptr, int len) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	uint8_t size = 2;
+	uint8_t buffer[size];
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -108,10 +113,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+	  	uint8_t id = flashReadID();
 		HAL_RTC_GetTime(&hrtc, &rtcTime, RTC_FORMAT_BIN);
-		HAL_Delay(1000);
-		printf("Time: %02d:%02d:%02d\n\r", rtcTime.Hours, rtcTime.Minutes, rtcTime.Seconds);
+		printf("Time: %02d:%02d:%02d ID: %d\n\r", rtcTime.Hours, rtcTime.Minutes, rtcTime.Seconds, id);
+
+		if(flashReadData(0, size, buffer)) {
+			for(uint8_t i = 0; i < size; i++) {
+				printf("[%3d] ", buffer[i]);
+				if(!i%10) printf("\r\n");
+			}
+		}
+		HAL_Delay(2000);
 
     /* USER CODE END WHILE */
 
