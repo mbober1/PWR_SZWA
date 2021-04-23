@@ -28,7 +28,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
-#include "flash.h"
 #include "stm32l476g_discovery_qspi.h"
 /* USER CODE END Includes */
 
@@ -78,6 +77,20 @@ void dataInfo(struct Data *data) {
 	printf("Meassure: %d\r\n\n", data->meassure);
 }
 
+uint16_t dataCount() {
+	uint16_t i = 0;
+	uint8_t tmp;
+
+	  while(tmp != 255) {
+		  BSP_QSPI_Read(&tmp, i, sizeof(tmp));
+		  printf("[%3d] ", tmp);
+		  if(!(i%10)) printf("\r\n");
+		  i++;
+	  }
+	  printf("\r\n");
+	  return i;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -120,26 +133,41 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+//  struct Data test;
+//  int size = sizeof(uint8_t);
+//
+//  for(uint8_t i = 0; i < 10; ++i) {
+//	  HAL_RTC_GetTime(&hrtc, &test.rtcTime, RTC_FORMAT_BIN);
+//	  HAL_RTC_GetDate(&hrtc, &test.rtcData, RTC_FORMAT_BIN);
+//	  test.meassure = i;
+//
+//	  dataInfo(&test);
+//	  BSP_QSPI_Write(&i, 120 + i*size, 1);
+//	  HAL_Delay(1000);
+//  }
+//
+//	  for(int i = 0; i < 10; ++i) {
+//		  uint8_t dupa;
+//		  BSP_QSPI_Read(&dupa, 120 + i*size, 1);
+////		  dataInfo(&dupa);
+//		  printf("[%3d] ", dupa);
+//	  	  HAL_Delay(1000);
+//	  }
+//	  printf("koniec %d \r\n", size);
+//  BSP_QSPI_Erase_Chip();
+  BSP_QSPI_Erase_Block(0);
+
   while (1)
   {
-	  struct Data test;
-	  int size = sizeof(test);
+	  uint8_t a = 69;
+	  for(uint8_t j = 0; j<199; ++j) BSP_QSPI_Write(&a, j, 1);
 
-	  for(int i = 0; i < 10; ++i) {
-		  HAL_RTC_GetTime(&hrtc, &test.rtcTime, RTC_FORMAT_BIN);
-		  HAL_RTC_GetDate(&hrtc, &test.rtcData, RTC_FORMAT_BIN);
-		  test.meassure = i;
+	  dataCount();
 
-		  dataInfo(&test);
-		  BSP_QSPI_Write((uint8_t *)test, 120 + i*size, size);
-	  }
+  	  HAL_Delay(5000);
 
-	  for(int i = 0; i < 10; ++i) {
-		  BSP_QSPI_Read(&buffer, 120 + i*size, size);
-		  dataInfo(&buffer);
-	  }
 
-		HAL_Delay(2000);
 
     /* USER CODE END WHILE */
 
