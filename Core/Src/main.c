@@ -64,33 +64,62 @@ int _write(int file, char *ptr, int len) {
 	return len;
 }
 
+// struktura z danymi
 struct Data {
 	RTC_TimeTypeDef rtcTime;
 	RTC_DateTypeDef rtcData;
 	int meassure;
 };
 
-
+// wypisz dane
 void dataInfo(struct Data *data) {
 	printf("Date: %02d.%02d.20%02d\n\r", data->rtcData.Date, data->rtcData.Month, data->rtcData.Year);
 	printf("Time: %02d:%02d:%02d\n\r", data->rtcTime.Hours, data->rtcTime.Minutes, data->rtcTime.Seconds);
 	printf("Meassure: %d\r\n\n", data->meassure);
 }
 
+// ile jest zapisanych danych
 uint16_t dataCount() {
-	uint16_t i = 0;
+//	uint16_t i = 0;
 	uint8_t tmp;
-
-	  while(tmp != 255) {
-		  BSP_QSPI_Read(&tmp, i, sizeof(tmp));
-		  printf("[%3d] ", tmp);
-		  if(!(i%10)) printf("\r\n");
-		  i++;
-	  }
-	  printf("\r\n");
-	  return i;
+	BSP_QSPI_Read(&tmp, 0, 1);
+	return tmp;
+//
+//	  while(tmp != 255) {
+//		  BSP_QSPI_Read(&tmp, i, sizeof(tmp));
+//		  printf("[%3d] ", tmp);
+//		  if(!(i%10)) printf("\r\n");
+//		  i++;
+//	  }
+//	  printf("\r\n");
+//	  return i;
 }
 
+// zapis do pamieci
+void storeStruct(void *data_source, size_t size)
+{
+  for(size_t i = 0; i < size; i++) {
+    uint8_t data = ((uint8_t *)data_source)[i];
+    BSP_QSPI_Write(&data, i, 1);
+  }
+
+  uint8_t tmp;
+  BSP_QSPI_Read(&tmp, 0, 1);
+  tmp++;
+  BSP_QSPI_Write(&tmp, 0, 1);
+}
+
+
+// odczyt w pamieci
+void loadStruct(void *data_dest, size_t size)
+{
+    for(size_t i = 0; i < size; i++)
+    {
+        uint8_t data = 0;
+        BSP_QSPI_Read(&data, i, 1);
+        ((char *)data_dest)[i] = data;
+    }
+}
 /* USER CODE END 0 */
 
 /**
@@ -100,7 +129,7 @@ uint16_t dataCount() {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	struct Data buffer;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -133,41 +162,25 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+BSP_QSPI_Erase_Sector(0);
 
-//  struct Data test;
-//  int size = sizeof(uint8_t);
-//
-//  for(uint8_t i = 0; i < 10; ++i) {
-//	  HAL_RTC_GetTime(&hrtc, &test.rtcTime, RTC_FORMAT_BIN);
-//	  HAL_RTC_GetDate(&hrtc, &test.rtcData, RTC_FORMAT_BIN);
-//	  test.meassure = i;
-//
-//	  dataInfo(&test);
-//	  BSP_QSPI_Write(&i, 120 + i*size, 1);
-//	  HAL_Delay(1000);
-//  }
-//
-//	  for(int i = 0; i < 10; ++i) {
-//		  uint8_t dupa;
-//		  BSP_QSPI_Read(&dupa, 120 + i*size, 1);
-////		  dataInfo(&dupa);
-//		  printf("[%3d] ", dupa);
-//	  	  HAL_Delay(1000);
-//	  }
-//	  printf("koniec %d \r\n", size);
-//  BSP_QSPI_Erase_Chip();
-  BSP_QSPI_Erase_Block(0);
 
   while (1)
   {
-	  uint8_t a = 69;
-	  for(uint8_t j = 0; j<199; ++j) BSP_QSPI_Write(&a, j, 1);
+	  struct Data test, test2;
+	  HAL_RTC_GetTime(&hrtc, &test.rtcTime, RTC_FORMAT_BIN);
+	  HAL_RTC_GetDate(&hrtc, &test.rtcData, RTC_FORMAT_BIN);
+	  test.meassure = 96;
 
-	  dataCount();
+	  dataInfo(&test);
+//	  printf("test1:\r\n");
+//	  storeStruct(&test, sizeof(test));
+
+	  loadStruct(&test2, sizeof(test));
+	  dataInfo(&test2);
+	  printf("Data stored: %d", dataCount());
 
   	  HAL_Delay(5000);
-
-
 
     /* USER CODE END WHILE */
 
