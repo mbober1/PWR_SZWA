@@ -29,6 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include "flash.h"
+#include "stm32l476g_discovery_qspi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,7 +65,18 @@ int _write(int file, char *ptr, int len) {
 	return len;
 }
 
+struct Data {
+	RTC_TimeTypeDef rtcTime;
+	RTC_DateTypeDef rtcData;
+	int meassure;
+};
 
+
+void dataInfo(struct Data *data) {
+	printf("Date: %02d.%02d.20%02d\n\r", data->rtcData.Date, data->rtcData.Month, data->rtcData.Year);
+	printf("Time: %02d:%02d:%02d\n\r", data->rtcTime.Hours, data->rtcTime.Minutes, data->rtcTime.Seconds);
+	printf("Meassure: %d\r\n\n", data->meassure);
+}
 
 /* USER CODE END 0 */
 
@@ -75,8 +87,7 @@ int _write(int file, char *ptr, int len) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint8_t size = 2;
-	uint8_t buffer[size];
+	struct Data buffer;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -102,27 +113,32 @@ int main(void)
   MX_USART2_UART_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-  RTC_TimeTypeDef rtcTime = {};
-
   HAL_RTC_Init(&hrtc);
-  HAL_RTC_SetTime(&hrtc, &rtcTime, RTC_FORMAT_BCD);
-
+//  HAL_RTC_SetTime(&hrtc, &rtcTime, RTC_FORMAT_BCD);
+  BSP_QSPI_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  	uint8_t id = flashReadID();
-		HAL_RTC_GetTime(&hrtc, &rtcTime, RTC_FORMAT_BIN);
-		printf("Time: %02d:%02d:%02d ID: %d\n\r", rtcTime.Hours, rtcTime.Minutes, rtcTime.Seconds, id);
+	  struct Data test;
+	  int size = sizeof(test);
 
-		if(flashReadData(0, size, buffer)) {
-			for(uint8_t i = 0; i < size; i++) {
-				printf("[%3d] ", buffer[i]);
-				if(!i%10) printf("\r\n");
-			}
-		}
+	  for(int i = 0; i < 10; ++i) {
+		  HAL_RTC_GetTime(&hrtc, &test.rtcTime, RTC_FORMAT_BIN);
+		  HAL_RTC_GetDate(&hrtc, &test.rtcData, RTC_FORMAT_BIN);
+		  test.meassure = i;
+
+		  dataInfo(&test);
+		  BSP_QSPI_Write((uint8_t *)test, 120 + i*size, size);
+	  }
+
+	  for(int i = 0; i < 10; ++i) {
+		  BSP_QSPI_Read(&buffer, 120 + i*size, size);
+		  dataInfo(&buffer);
+	  }
+
 		HAL_Delay(2000);
 
     /* USER CODE END WHILE */
