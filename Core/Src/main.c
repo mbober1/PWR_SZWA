@@ -111,18 +111,12 @@ if(BSP_QSPI_Erase_Sector(0) != QSPI_OK) printf("SECTOR CLEAR ERROR!\r\n");
 
   while (1)
   {
-	  struct Data test1;
-	  HAL_RTC_GetTime(&hrtc, &test1.rtcTime, RTC_FORMAT_BIN);
-	  HAL_RTC_GetDate(&hrtc, &test1.rtcData, RTC_FORMAT_BIN);
-	  test1.meassure = dataCount;
-	  if(storeNextStruct(&test1) != QSPI_OK) printf("STORE ERROR!\r\n");
-
-
+	  nextMeasurement(7);
 	  printf("\n\n Data stored: %d\r\n", dataCount);
 
-	  struct Data test2;
-	  if(loadStruct(&test2, sizeof(struct Data), dataCount - 1) != QSPI_OK) printf("LOAD ERROR!\r\n");
-	  dataInfo(&test2);
+	  struct Data tmp;
+	  getLastStruct(&tmp);
+	  dataInfo(&tmp);
 
   	  HAL_Delay(1000);
 
