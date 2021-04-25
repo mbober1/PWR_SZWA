@@ -38,6 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define MEM_START 100
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -72,7 +73,7 @@ struct Data {
 };
 
 // wypisz dane
-void dataInfo(struct Data *data) {
+void dataInfo(const struct Data *data) {
 	printf("Date: %02d.%02d.20%02d\n\r", data->rtcData.Date, data->rtcData.Month, data->rtcData.Year);
 	printf("Time: %02d:%02d:%02d\n\r", data->rtcTime.Hours, data->rtcTime.Minutes, data->rtcTime.Seconds);
 	printf("Meassure: %d\r\n\n", data->meassure);
@@ -81,12 +82,12 @@ void dataInfo(struct Data *data) {
 // ile jest zapisanych danych
 uint16_t getDataCount() {
 	uint8_t tmp;
-	BSP_QSPI_Read(&tmp, 0, 1);
+	BSP_QSPI_Read(&tmp, MEM_START, 1);
 	return tmp;
 }
 
 uint8_t setDataCount(uint8_t tmp) {
-	return BSP_QSPI_Write(&tmp, 0, 1);
+	return BSP_QSPI_Write(&tmp, MEM_START, 1);
 }
 
 // zapis do pamieci
@@ -96,7 +97,7 @@ uint8_t storeStruct(void *data_source, size_t size, uint16_t place)
 
   for(size_t i = 0; i < size; i++) {
     uint8_t data = ((uint8_t *)data_source)[i];
-    uint16_t address = i + (size*place) + 1;
+    uint16_t address = MEM_START + (size*place) + 1;
     if(BSP_QSPI_Write(&data, address, 1) != QSPI_OK) return QSPI_ERROR;
     printf(" [%d]", address);
   }
@@ -106,7 +107,7 @@ uint8_t storeStruct(void *data_source, size_t size, uint16_t place)
   printf("Old data count %d\r\n", tmp);
   tmp++;
 
-  if(setDataCount(tmp) != QSPI_OK) return QSPI_ERROR;
+  if(setDataCount(place) != QSPI_OK) return QSPI_ERROR;
   printf("New data count %d\r\n", tmp);
 
   return QSPI_OK;
@@ -116,12 +117,17 @@ uint8_t storeStruct(void *data_source, size_t size, uint16_t place)
 // odczyt w pamieci
 uint8_t loadStruct(void *data_dest, size_t size, uint16_t place)
 {
+	printf("Load start | Size %d | Place %d |", size, place);
+
     for(size_t i = 0; i < size; i++)
     {
         uint8_t data = 0;
-        if(BSP_QSPI_Read(&data, 1 + i*(place), 1) != QSPI_OK) return QSPI_ERROR;
+        uint16_t address = MEM_START + (size*place) + 1;
+        if(BSP_QSPI_Read(&data, address, 1) != QSPI_OK) return QSPI_ERROR;
         ((char *)data_dest)[i] = data;
+        printf(" [%d]", address);
     }
+    printf(" | Load finnished\r\n");
     return QSPI_OK;
 }
 
@@ -167,8 +173,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-if(BSP_QSPI_Erase_Sector(0) != QSPI_OK) printf("SECTOR CLEAR ERROR!\r\n");
-HAL_Delay(1000);
+//if(BSP_QSPI_Erase_Sector(0) != QSPI_OK) printf("SECTOR CLEAR ERROR!\r\n");
+//HAL_Delay(1000);
 if(setDataCount(0) != QSPI_OK) printf("Data set 0 ERROR!\r\n");
 else printf("Data stored: %d\r\n", getDataCount());
 
