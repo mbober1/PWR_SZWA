@@ -79,47 +79,52 @@ void dataInfo(struct Data *data) {
 }
 
 // ile jest zapisanych danych
-uint16_t dataCount() {
-//	uint16_t i = 0;
+uint16_t getDataCount() {
 	uint8_t tmp;
 	BSP_QSPI_Read(&tmp, 0, 1);
 	return tmp;
-//
-//	  while(tmp != 255) {
-//		  BSP_QSPI_Read(&tmp, i, sizeof(tmp));
-//		  printf("[%3d] ", tmp);
-//		  if(!(i%10)) printf("\r\n");
-//		  i++;
-//	  }
-//	  printf("\r\n");
-//	  return i;
+}
+
+uint8_t setDataCount(uint8_t tmp) {
+	return BSP_QSPI_Write(&tmp, 0, 1);
 }
 
 // zapis do pamieci
-void storeStruct(void *data_source, size_t size)
+uint8_t storeStruct(void *data_source, size_t size, uint16_t place)
 {
+  printf("Store start | Size %d | Place %d |", size, place);
+
   for(size_t i = 0; i < size; i++) {
     uint8_t data = ((uint8_t *)data_source)[i];
-    BSP_QSPI_Write(&data, i, 1);
+    uint16_t address = i + (size*place) + 1;
+    if(BSP_QSPI_Write(&data, address, 1) != QSPI_OK) return QSPI_ERROR;
+    printf(" [%d]", address);
   }
+  printf(" | Store finnished\r\n");
 
-  uint8_t tmp;
-  BSP_QSPI_Read(&tmp, 0, 1);
+  uint8_t tmp = getDataCount();
+  printf("Old data count %d\r\n", tmp);
   tmp++;
-  BSP_QSPI_Write(&tmp, 0, 1);
+
+  if(setDataCount(tmp) != QSPI_OK) return QSPI_ERROR;
+  printf("New data count %d\r\n", tmp);
+
+  return QSPI_OK;
 }
 
 
 // odczyt w pamieci
-void loadStruct(void *data_dest, size_t size)
+uint8_t loadStruct(void *data_dest, size_t size, uint16_t place)
 {
     for(size_t i = 0; i < size; i++)
     {
         uint8_t data = 0;
-        BSP_QSPI_Read(&data, i, 1);
+        if(BSP_QSPI_Read(&data, 1 + i*(place), 1) != QSPI_OK) return QSPI_ERROR;
         ((char *)data_dest)[i] = data;
     }
+    return QSPI_OK;
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -162,23 +167,30 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-BSP_QSPI_Erase_Sector(0);
+if(BSP_QSPI_Erase_Sector(0) != QSPI_OK) printf("SECTOR CLEAR ERROR!\r\n");
+HAL_Delay(1000);
+if(setDataCount(0) != QSPI_OK) printf("Data set 0 ERROR!\r\n");
+else printf("Data stored: %d\r\n", getDataCount());
 
 
   while (1)
   {
-	  struct Data test, test2;
-	  HAL_RTC_GetTime(&hrtc, &test.rtcTime, RTC_FORMAT_BIN);
-	  HAL_RTC_GetDate(&hrtc, &test.rtcData, RTC_FORMAT_BIN);
-	  test.meassure = 96;
+	  for(int i = 0; i < 10; ++i) {
+		  struct Data test;
+		  HAL_RTC_GetTime(&hrtc, &test.rtcTime, RTC_FORMAT_BIN);
+		  HAL_RTC_GetDate(&hrtc, &test.rtcData, RTC_FORMAT_BIN);
+		  test.meassure = i;
+		  if(storeStruct(&test, sizeof(test), i) != QSPI_OK) printf("STORE %d ERROR!\r\n", i);
+	  }
 
-	  dataInfo(&test);
-//	  printf("test1:\r\n");
-//	  storeStruct(&test, sizeof(test));
 
-	  loadStruct(&test2, sizeof(test));
-	  dataInfo(&test2);
-	  printf("Data stored: %d", dataCount());
+	  printf("Data stored: %d\r\n", getDataCount());
+
+	  for(int i = 0; i < getDataCount(); ++i) {
+		  struct Data test;
+		  if(loadStruct(&test, sizeof(test), i) != QSPI_OK) printf("LOAD %d ERROR!\r\n", i);
+		  dataInfo(&test);
+	  }
 
   	  HAL_Delay(5000);
 
