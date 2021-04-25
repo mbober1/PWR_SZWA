@@ -80,7 +80,7 @@ void dataInfo(const struct Data *data) {
 }
 
 // ile jest zapisanych danych
-uint16_t getDataCount() {
+uint8_t getDataCount() {
 	uint8_t tmp;
 	BSP_QSPI_Read(&tmp, MEM_START, 1);
 	return tmp;
@@ -178,6 +178,36 @@ int main(void)
 if(setDataCount(0) != QSPI_OK) printf("Data set 0 ERROR!\r\n");
 else printf("Data stored: %d\r\n", getDataCount());
 
+uint8_t tmp = 0;
+uint8_t newTMP = tmp + 1;
+if(BSP_QSPI_Read(&tmp, MEM_START, 1) == QSPI_OK) printf("read git\r\n");
+printf("TMP: %d->%d , size: %d\r\n", tmp, newTMP, sizeof(tmp));
+if(BSP_QSPI_Write(&newTMP, MEM_START, 1) == QSPI_OK) printf("write git\r\n");
+HAL_Delay(1000);
+
+newTMP = tmp + 1;
+if(BSP_QSPI_Read(&tmp, MEM_START, 1) == QSPI_OK) printf("read git\r\n");
+printf("TMP: %d->%d , size: %d\r\n", tmp, newTMP, sizeof(tmp));
+if(BSP_QSPI_Write(&newTMP, MEM_START, 1) == QSPI_OK) printf("write git\r\n");
+HAL_Delay(1000);
+
+newTMP = tmp + 1;
+if(BSP_QSPI_Read(&tmp, MEM_START, 1) == QSPI_OK) printf("read git\r\n");
+printf("TMP: %d->%d , size: %d\r\n", tmp, newTMP, sizeof(tmp));
+if(BSP_QSPI_Write(&newTMP, MEM_START, 1) == QSPI_OK) printf("write git\r\n");
+HAL_Delay(1000);
+
+newTMP = tmp + 1;
+if(BSP_QSPI_Read(&tmp, MEM_START, 1) == QSPI_OK) printf("read git\r\n");
+printf("TMP: %d->%d , size: %d\r\n", tmp, newTMP, sizeof(tmp));
+if(BSP_QSPI_Write(&newTMP, MEM_START, 1) == QSPI_OK) printf("write git\r\n");
+HAL_Delay(1000);
+
+newTMP = tmp + 1;
+if(BSP_QSPI_Read(&tmp, MEM_START, 1) == QSPI_OK) printf("read git\r\n");
+printf("TMP: %d->%d , size: %d\r\n", tmp, newTMP, sizeof(tmp));
+if(BSP_QSPI_Write(&newTMP, MEM_START, 1) == QSPI_OK) printf("write git\r\n");
+HAL_Delay(1000);
 
   while (1)
   {
