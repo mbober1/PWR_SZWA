@@ -66,9 +66,11 @@ int _write(int file, char *ptr, int len) {
 
 void memoryInfo() {
 	printf("\n\nData stored: %d\r\n", dataCount);
-	printf("Memory left: %d\r\n", dataCount);
-
+	printf("Memory left: %d\r\n", memLeft2());
+	printf("Best data: \r\n");
+	printf("---------- \r\n");
 	infoStruct(&bestStruct);
+	printf("---------- \r\n");
 }
 
 
