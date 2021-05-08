@@ -123,3 +123,8 @@ uint8_t nextMeasurement(uint16_t data) {
 	tmp.meassure = data;
 	return storeNextStruct(&tmp);
 }
+
+
+int memLeft2() {
+	return N25Q128A_FLASH_SIZE / sizeof(struct Data) - dataCount;
+}
