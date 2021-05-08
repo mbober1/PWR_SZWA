@@ -98,9 +98,8 @@ uint8_t getLastStruct(struct Data *tmp) {
  * @return QSPI Error code.
  */
 uint8_t storeNextStruct(void *dataSource) {
-	struct Data tmp = (struct Data)(&dataSource);
-	if(tmp.meassure > best.meassure) copyStruct(&tmp, &best);
-	return storeStruct(&tmp, sizeof(struct Data), dataCount++);
+	if(((struct Data*)dataSource)->meassure > best.meassure) copyStruct(dataSource, &best);
+	return storeStruct(dataSource, sizeof(struct Data), dataCount++);
 }
 
 
