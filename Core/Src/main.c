@@ -64,6 +64,14 @@ int _write(int file, char *ptr, int len) {
 	return len;
 }
 
+void memoryInfo() {
+	printf("\n\nData stored: %d\r\n", dataCount);
+	printf("Memory left: %d\r\n", dataCount);
+
+	infoStruct(&bestStruct);
+}
+
+
 
 /* USER CODE END 0 */
 
@@ -112,12 +120,7 @@ if(BSP_QSPI_Erase_Sector(0) != QSPI_OK) printf("SECTOR CLEAR ERROR!\r\n");
   while (1)
   {
 	  nextMeasurement(dataCount);
-	  printf("\n\n Data stored: %d\r\n", dataCount);
-
-	  struct Data tmp;
-	  getLastStruct(&tmp);
-	  infoStruct(&tmp);
-
+	  memoryInfo();
   	  HAL_Delay(1000);
 
     /* USER CODE END WHILE */
