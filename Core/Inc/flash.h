@@ -2,6 +2,7 @@
 
 
 static uint16_t dataCount;
+static struct Data best;
 
 
 /**
@@ -15,6 +16,12 @@ struct Data {
 	RTC_DateTypeDef rtcData;
 	uint16_t meassure;
 };
+
+void copyStruct(const struct Data *a, struct Data *b) {
+	b->meassure = a->meassure;
+	b->rtcData = a->rtcData;
+	b->rtcTime = a->rtcTime;
+}
 
 
 /**
@@ -91,7 +98,9 @@ uint8_t getLastStruct(struct Data *tmp) {
  * @return QSPI Error code.
  */
 uint8_t storeNextStruct(void *dataSource) {
-	return storeStruct(dataSource, sizeof(struct Data), dataCount++);
+	struct Data tmp = (struct Data)(&dataSource);
+	if(tmp.meassure > best.meassure) copyStruct(&tmp, &best);
+	return storeStruct(&tmp, sizeof(struct Data), dataCount++);
 }
 
 
