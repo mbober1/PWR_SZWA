@@ -111,12 +111,12 @@ if(BSP_QSPI_Erase_Sector(0) != QSPI_OK) printf("SECTOR CLEAR ERROR!\r\n");
 
   while (1)
   {
-	  nextMeasurement(7);
+	  nextMeasurement(dataCount);
 	  printf("\n\n Data stored: %d\r\n", dataCount);
 
 	  struct Data tmp;
 	  getLastStruct(&tmp);
-	  dataInfo(&tmp);
+	  infoStruct(&tmp);
 
   	  HAL_Delay(1000);
 
