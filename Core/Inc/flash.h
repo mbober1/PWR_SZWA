@@ -2,7 +2,7 @@
 
 
 static uint16_t dataCount;
-static struct Data best;
+static struct Data bestStruct;
 
 
 /**
@@ -105,7 +105,7 @@ uint8_t getLastStruct(struct Data *tmp) {
  * @return QSPI Error code.
  */
 uint8_t storeNextStruct(void *dataSource) {
-	if(((struct Data*)dataSource)->meassure > best.meassure) copyStruct(dataSource, &best);
+	if(((struct Data*)dataSource)->meassure > bestStruct.meassure) copyStruct(dataSource, &bestStruct);
 	return storeStruct(dataSource, sizeof(struct Data), dataCount++);
 }
 
