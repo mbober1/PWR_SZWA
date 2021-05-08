@@ -17,6 +17,13 @@ struct Data {
 	uint16_t meassure;
 };
 
+
+/**
+ * Copy structure. From A to B.
+ *
+ * @param a Source of data.
+ * @param b Destination of data.
+ */
 void copyStruct(const struct Data *a, struct Data *b) {
 	b->meassure = a->meassure;
 	b->rtcData = a->rtcData;
