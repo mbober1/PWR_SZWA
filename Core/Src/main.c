@@ -152,7 +152,7 @@ int main(void)
 		for(int i = 0; i < 6; i++) printf("		%d: %d\r\n", i+1, zdarzenia[i]);
 		printf("\r\n\n");
 
-		HAL_Delay(1000);
+		HAL_Delay(100);
 
     /* USER CODE END WHILE */
 
