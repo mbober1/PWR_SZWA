@@ -135,16 +135,13 @@ int main(void)
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 	HAL_RTC_Init(&hrtc);
-//  HAL_RTC_SetTime(&hrtc, &rtcTime, RTC_FORMAT_BCD);
 	BSP_QSPI_Init();
 	LSM303C_AccInit(0x51);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	if (BSP_QSPI_Erase_Sector(0) != QSPI_OK)
-		printf("SECTOR CLEAR ERROR!\r\n");
+	if (BSP_QSPI_Erase_Sector(0) != QSPI_OK) printf("SECTOR CLEAR ERROR!\r\n");
 
 	while (1) {
 		printf("\033[2J");
