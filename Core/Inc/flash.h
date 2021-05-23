@@ -37,9 +37,9 @@ void copyStruct(const struct Data *a, struct Data *b) {
  * @param data Pointer to Data struct.
  */
 void infoStruct(const struct Data *data) {
-	printf("Date: %02d.%02d.20%02d\n\r", data->rtcData.Date, data->rtcData.Month, data->rtcData.Year);
-	printf("Time: %02d:%02d:%02d:%03ld\n\r", data->rtcTime.Hours, data->rtcTime.Minutes, data->rtcTime.Seconds, data->rtcTime.SubSeconds);
-	printf("Meassure: %d\r\n\n", data->meassure);
+	printf("	Date: %02d.%02d.20%02d\n\r", data->rtcData.Date, data->rtcData.Month, data->rtcData.Year);
+	printf("	Time: %02d:%02d:%02d:%03ld\n\r", data->rtcTime.Hours, data->rtcTime.Minutes, data->rtcTime.Seconds, data->rtcTime.SubSeconds);
+	printf("	Meassure: %d\r\n", data->meassure);
 }
 
 
@@ -125,6 +125,6 @@ uint8_t nextMeasurement(uint16_t data) {
 }
 
 
-int memLeft2() {
+int memLeft() {
 	return N25Q128A_FLASH_SIZE / sizeof(struct Data) - dataCount;
 }
