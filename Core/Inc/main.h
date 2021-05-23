@@ -58,12 +58,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define MAG_CS_Pin GPIO_PIN_0
-#define MAG_CS_GPIO_Port GPIOC
-#define MAG_INT_Pin GPIO_PIN_1
-#define MAG_INT_GPIO_Port GPIOC
-#define MAG_DRDY_Pin GPIO_PIN_2
-#define MAG_DRDY_GPIO_Port GPIOC
 #define LD_R_Pin GPIO_PIN_2
 #define LD_R_GPIO_Port GPIOB
 #define LD_G_Pin GPIO_PIN_8
@@ -80,10 +74,12 @@ void Error_Handler(void);
 #define QSPI_D2_GPIO_Port GPIOE
 #define QSPI_D3_Pin GPIO_PIN_15
 #define QSPI_D3_GPIO_Port GPIOE
-#define MAG_SCK_Pin GPIO_PIN_1
-#define MAG_SCK_GPIO_Port GPIOD
-#define MAG_MOSI_Pin GPIO_PIN_4
-#define MAG_MOSI_GPIO_Port GPIOD
+#define EXT_RST_Pin GPIO_PIN_0
+#define EXT_RST_GPIO_Port GPIOD
+#define MEMS_SCK_Pin GPIO_PIN_1
+#define MEMS_SCK_GPIO_Port GPIOD
+#define MEMS_MOSI_Pin GPIO_PIN_4
+#define MEMS_MOSI_GPIO_Port GPIOD
 #define USART_TX_Pin GPIO_PIN_5
 #define USART_TX_GPIO_Port GPIOD
 #define USART_RX_Pin GPIO_PIN_6
