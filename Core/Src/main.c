@@ -98,6 +98,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	}
 }
 
+void actualTime() {
+	RTC_TimeTypeDef rtcTime;
+	RTC_DateTypeDef rtcData;
+	HAL_RTC_GetTime(&hrtc, &rtcTime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &rtcData, RTC_FORMAT_BIN);
+	printf("Date: %02d.%02d.20%02d", rtcData.Date, rtcData.Month, rtcData.Year);
+	printf("	Time: %02d:%02d:%02d:%03ld\n\r", rtcTime.Hours, rtcTime.Minutes, rtcTime.Seconds, rtcTime.SubSeconds);
+
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -145,6 +155,7 @@ int main(void)
 
 	while (1) {
 		printf("\033[2J");
+		actualTime();
 		memoryInfo();
 
 		printf("x: %3d  y: %3d z: %3d  Wektor: %3d \r\n", dane[0], dane[1], dane[2], W);
