@@ -66,7 +66,7 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 int _write(int file, char *ptr, int len) {
-	HAL_UART_Transmit(&huart2, (uint8_t*) ptr, len, 50);
+	HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, 50);
 	return len;
 }
 
@@ -74,34 +74,27 @@ void memoryInfo() {
 	printf("---------- \r\n");
 	printf("Data stored: %d\r\n", dataCount);
 	printf("Memory left: %d\r\n", memLeft());
-	printf("Best data: \r\n");
-	infoStruct(&bestStruct);
+	if(dataCount) {
+		printf("Best data: \r\n");
+		infoStruct(&bestStruct);
+	}
 	printf("---------- \r\n\n");
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim == &htim6) {
 		LSM303C_AccReadXYZ(dane);
-		W = sqrt((dane[0] - 550) ^ 2 + (dane[1]) ^ 2 + (dane[2]) ^ 2);
-		if (W > 23) {
-			zdarzenia[0] += 1;
-		}
-		if (W > 35) {
-			zdarzenia[1] += 1;
-		}
-		if (W > 50) {
-			zdarzenia[2] += 1;
-		}
-		if (W > 100) {
-			zdarzenia[3] += 1;
-		}
-		if (W > 200) {
-			zdarzenia[4] += 1;
-		}
-		if (W > 500) {
-			zdarzenia[5] += 1;
-		}
 
+		W = sqrt((dane[0] - 550) ^ 2 + (dane[1]) ^ 2 + (dane[2]) ^ 2);
+
+		if (W > 23)  zdarzenia[0]++;
+		if (W > 35)  zdarzenia[1]++;
+		if (W > 50)  zdarzenia[2]++;
+		if (W > 100) zdarzenia[3]++;
+		if (W > 200) zdarzenia[4]++;
+		if (W > 500) zdarzenia[5]++;
+
+		if (W > 23) nextMeasurement(W);
 	}
 }
 
@@ -153,15 +146,13 @@ int main(void) {
 		printf("SECTOR CLEAR ERROR!\r\n");
 
 	while (1) {
-		nextMeasurement(dataCount);
+		printf("\033[2J");
 		memoryInfo();
 
-		printf("x: %3d  y: %3d z: %3d  Wektor: %3d \r\n", dane[0], dane[1],
-				dane[2], W);
-		printf(
-				"Liczba zdarzeń stopnia: 1: %3d 2: %3d 3:  %3d 4: %3d 5: %3d 6: %3d",
-				zdarzenia[0], zdarzenia[1], zdarzenia[2], zdarzenia[3],
-				zdarzenia[4], zdarzenia[5]);
+		printf("x: %3d  y: %3d z: %3d  Wektor: %3d \r\n", dane[0], dane[1], dane[2], W);
+		printf("Liczba zdarzen stopnia:\r\n");
+		for(int i = 0; i < 6; i++) printf("		%d: %d\r\n", i+1, zdarzenia[i]);
+		printf("\r\n\n");
 
 		HAL_Delay(1000);
 
