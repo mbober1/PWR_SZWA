@@ -3,7 +3,6 @@
 
 static struct Data bestStruct;
 
-
 /**
  * Data structure.
  *
@@ -72,7 +71,7 @@ uint8_t storeStruct(void *dataSource, size_t size, uint16_t place)
 {
   for(size_t i = 0; i < size; i++) {
     uint8_t data = ((uint8_t *)dataSource)[i];
-    uint16_t address = (size*place) + i + N25Q128A_PAGE_SIZE;
+    uint16_t address = (size*place) + i + N25Q128A_SUBSECTOR_SIZE;
     if(BSP_QSPI_Write(&data, address, 1) != QSPI_OK) return QSPI_ERROR;
   }
   return QSPI_OK;
@@ -98,7 +97,7 @@ uint8_t loadStruct(void *dataDestination, size_t size, uint16_t place)
 
   for(size_t i = 0; i < size; i++) {
       uint8_t data;
-      uint16_t address = (size*place) + i + N25Q128A_PAGE_SIZE;
+      uint16_t address = (size*place) + i + N25Q128A_SUBSECTOR_SIZE;
       if(BSP_QSPI_Read(&data, address, 1) != QSPI_OK) return QSPI_ERROR;
       ((char *)dataDestination)[i] = data;
   }
@@ -151,8 +150,12 @@ int memLeft() {
 }
 
 void clearMemory() {
+//	if (BSP_QSPI_Erase_Block(0 * N25Q128A_SUBSECTOR_SIZE) != QSPI_OK) return QSPI_ERROR;
+//	if (BSP_QSPI_Erase_Block(1 * N25Q128A_SUBSECTOR_SIZE) != QSPI_OK) return QSPI_ERROR;
+//	if (BSP_QSPI_Erase_Block(2 * N25Q128A_SUBSECTOR_SIZE) != QSPI_OK) return QSPI_ERROR;
+
+//	if (BSP_QSPI_Erase_Block(1) != QSPI_OK) return QSPI_ERROR;
 //	if (BSP_QSPI_Erase_Sector(0) != QSPI_OK) return QSPI_ERROR;
-//	if (BSP_QSPI_Erase_Sector(1) != QSPI_OK) return QSPI_ERROR;
 	if (BSP_QSPI_Erase_Chip() != QSPI_OK) return QSPI_ERROR;
 	setDataCount(0);
 }
@@ -160,7 +163,7 @@ void clearMemory() {
 void listAllData() {
 	struct Data data;
 
-	for(int i = getDataCount(); i > 1; i--) {
+	for(int i = getDataCount(); i > 0; i--) {
 		loadStruct(&data, sizeof(struct Data), i - 1);
 		printf("[%3d] %02d:%02d:%02d:%03ld	%02d.%02d.20%02d -> %d\n\r", i, data.rtcTime.Hours, data.rtcTime.Minutes, data.rtcTime.Seconds, data.rtcTime.SubSeconds, data.rtcData.Date, data.rtcData.Month, data.rtcData.Year, data.meassure);
 	}
