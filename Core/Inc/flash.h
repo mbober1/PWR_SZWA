@@ -1,7 +1,6 @@
 #include "stm32l476g_discovery_qspi.h"
 
 
-static uint16_t dataCount;
 static struct Data bestStruct;
 
 
@@ -16,6 +15,24 @@ struct Data {
 	RTC_DateTypeDef rtcData;
 	uint16_t meassure;
 };
+
+
+uint8_t setDataCount(uint16_t count) {
+	uint8_t data[2] = { (uint8_t)(count >> 8), (uint8_t)count };
+	if (BSP_QSPI_Erase_Block(0) != QSPI_OK) return QSPI_ERROR;
+	if (BSP_QSPI_Write(data, 50, 2) != QSPI_OK) return QSPI_ERROR;
+	return QSPI_OK;
+}
+
+
+uint16_t getDataCount() {
+	uint8_t data[2];
+	if(BSP_QSPI_Read(data, 50, 2) == QSPI_OK) {
+		uint16_t count = (uint16_t) ((data[0]<<8) | data[1]);
+		return count;
+	}
+	else return 0;
+}
 
 
 /**
@@ -55,7 +72,7 @@ uint8_t storeStruct(void *dataSource, size_t size, uint16_t place)
 {
   for(size_t i = 0; i < size; i++) {
     uint8_t data = ((uint8_t *)dataSource)[i];
-    uint16_t address = (size*place) + i;
+    uint16_t address = (size*place) + i + N25Q128A_PAGE_SIZE;
     if(BSP_QSPI_Write(&data, address, 1) != QSPI_OK) return QSPI_ERROR;
   }
   return QSPI_OK;
@@ -72,6 +89,8 @@ uint8_t storeStruct(void *dataSource, size_t size, uint16_t place)
  */
 uint8_t loadStruct(void *dataDestination, size_t size, uint16_t place)
 {
+	uint16_t dataCount = 169;
+
 	if(place > dataCount) {
 		printf("There is only %d elements, not %d", dataCount, place);
 		return QSPI_ERROR;
@@ -79,7 +98,7 @@ uint8_t loadStruct(void *dataDestination, size_t size, uint16_t place)
 
   for(size_t i = 0; i < size; i++) {
       uint8_t data = 0;
-      uint16_t address = (size*place) + i;
+      uint16_t address = (size*place) + i + N25Q128A_PAGE_SIZE;
       if(BSP_QSPI_Read(&data, address, 1) != QSPI_OK) return QSPI_ERROR;
       ((char *)dataDestination)[i] = data;
   }
@@ -94,7 +113,7 @@ uint8_t loadStruct(void *dataDestination, size_t size, uint16_t place)
  * @return QSPI Error code.
  */
 uint8_t getLastStruct(struct Data *tmp) {
-	return loadStruct(tmp, sizeof(struct Data), dataCount - 1);
+	return loadStruct(tmp, sizeof(struct Data), getDataCount() - 1);
 }
 
 
@@ -106,7 +125,9 @@ uint8_t getLastStruct(struct Data *tmp) {
  */
 uint8_t storeNextStruct(void *dataSource) {
 	if(((struct Data*)dataSource)->meassure > bestStruct.meassure) copyStruct(dataSource, &bestStruct);
-	return storeStruct(dataSource, sizeof(struct Data), dataCount++);
+	uint16_t dataCount = getDataCount();
+	setDataCount(++dataCount);
+	return storeStruct(dataSource, sizeof(struct Data), dataCount);
 }
 
 
@@ -126,5 +147,7 @@ uint8_t nextMeasurement(uint16_t data) {
 
 
 int memLeft() {
-	return N25Q128A_FLASH_SIZE / sizeof(struct Data) - dataCount;
+	return (N25Q128A_FLASH_SIZE - N25Q128A_PAGE_SIZE) / (sizeof(struct Data) * getDataCount());
 }
+
+

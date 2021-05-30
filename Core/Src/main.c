@@ -71,6 +71,7 @@ int _write(int file, char *ptr, int len) {
 }
 
 void memoryInfo() {
+	uint16_t dataCount = getDataCount();
 	printf("---------- \r\n");
 	printf("Data stored: %d\r\n", dataCount);
 	printf("Memory left: %d\r\n", memLeft());
@@ -151,16 +152,15 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	if (BSP_QSPI_Erase_Sector(0) != QSPI_OK) printf("SECTOR CLEAR ERROR!\r\n");
 
 	while (1) {
-		printf("\033[2J");
-		actualTime();
+		printf("\033[2J"); // clear console
+		actualTime(); // print actual time
 		memoryInfo();
-
-		printf("x: %3d  y: %3d z: %3d  Wektor: %3d \r\n", dane[0], dane[1], dane[2], W);
-		printf("Liczba zdarzen stopnia:\r\n");
-		for(int i = 0; i < 6; i++) printf("		%d: %d\r\n", i+1, zdarzenia[i]);
+//		nextMeasurement(69);
+//		printf("x: %3d  y: %3d z: %3d  Wektor: %3d \r\n", dane[0], dane[1], dane[2], W);
+//		printf("Liczba zdarzen stopnia:\r\n");
+//		for(int i = 0; i < 6; i++) printf("		%d: %d\r\n", i+1, zdarzenia[i]);
 		printf("\r\n\n");
 
 		HAL_Delay(100);
