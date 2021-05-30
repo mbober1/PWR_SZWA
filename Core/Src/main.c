@@ -74,11 +74,11 @@ void memoryInfo() {
 	uint16_t dataCount = getDataCount();
 	printf("---------- \r\n");
 	printf("Data stored: %d\r\n", dataCount);
-	printf("Memory left: %d\r\n", memLeft());
-	if(dataCount) {
-		printf("Best data: \r\n");
-		infoStruct(&bestStruct);
-	}
+//	if(dataCount) {
+//		printf("Memory left: %d\r\n", memLeft());
+//		printf("Best data: \r\n");
+//		infoStruct(&bestStruct);
+//	}
 	printf("---------- \r\n\n");
 }
 
@@ -148,20 +148,35 @@ int main(void)
 	HAL_RTC_Init(&hrtc);
 	BSP_QSPI_Init();
 	LSM303C_AccInit(0x51);
+	//clearMemory();
+	setDataCount(0);
   /* USER CODE END 2 */
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
 	while (1) {
 		printf("\033[2J"); // clear console
 		actualTime(); // print actual time
+		nextMeasurement(69);
+
 		memoryInfo();
-//		nextMeasurement(69);
+//
+		struct Data tmp;
+		getLastStruct(&tmp);
+//		tmp.meassure = 69;
+//		HAL_RTC_GetTime(&hrtc, &tmp.rtcTime, RTC_FORMAT_BIN);
+//		HAL_RTC_GetDate(&hrtc, &tmp.rtcData, RTC_FORMAT_BIN);
+//		BSP_QSPI_Erase_Block(0);
+//		uint16_t dataCount = getDataCount() + 1;
+//		setDataCount(dataCount);
+//		storeStruct(&tmp, sizeof(struct Data), 0);
+//		loadStruct(&tmp, sizeof(struct Data), 0);
+		infoStruct(&tmp);
 //		printf("x: %3d  y: %3d z: %3d  Wektor: %3d \r\n", dane[0], dane[1], dane[2], W);
 //		printf("Liczba zdarzen stopnia:\r\n");
 //		for(int i = 0; i < 6; i++) printf("		%d: %d\r\n", i+1, zdarzenia[i]);
 		printf("\r\n\n");
+		listAllData();
 
 		HAL_Delay(100);
 

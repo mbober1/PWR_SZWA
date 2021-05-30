@@ -20,14 +20,14 @@ struct Data {
 uint8_t setDataCount(uint16_t count) {
 	uint8_t data[2] = { (uint8_t)(count >> 8), (uint8_t)count };
 	if (BSP_QSPI_Erase_Block(0) != QSPI_OK) return QSPI_ERROR;
-	if (BSP_QSPI_Write(data, 50, 2) != QSPI_OK) return QSPI_ERROR;
+	if (BSP_QSPI_Write(data, 0, 2) != QSPI_OK) return QSPI_ERROR;
 	return QSPI_OK;
 }
 
 
 uint16_t getDataCount() {
 	uint8_t data[2];
-	if(BSP_QSPI_Read(data, 50, 2) == QSPI_OK) {
+	if(BSP_QSPI_Read(data, 0, 2) == QSPI_OK) {
 		uint16_t count = (uint16_t) ((data[0]<<8) | data[1]);
 		return count;
 	}
@@ -89,7 +89,7 @@ uint8_t storeStruct(void *dataSource, size_t size, uint16_t place)
  */
 uint8_t loadStruct(void *dataDestination, size_t size, uint16_t place)
 {
-	uint16_t dataCount = 169;
+	uint16_t dataCount = getDataCount();
 
 	if(place > dataCount) {
 		printf("There is only %d elements, not %d", dataCount, place);
@@ -97,7 +97,7 @@ uint8_t loadStruct(void *dataDestination, size_t size, uint16_t place)
 	}
 
   for(size_t i = 0; i < size; i++) {
-      uint8_t data = 0;
+      uint8_t data;
       uint16_t address = (size*place) + i + N25Q128A_PAGE_SIZE;
       if(BSP_QSPI_Read(&data, address, 1) != QSPI_OK) return QSPI_ERROR;
       ((char *)dataDestination)[i] = data;
@@ -124,10 +124,10 @@ uint8_t getLastStruct(struct Data *tmp) {
  * @return QSPI Error code.
  */
 uint8_t storeNextStruct(void *dataSource) {
-	if(((struct Data*)dataSource)->meassure > bestStruct.meassure) copyStruct(dataSource, &bestStruct);
-	uint16_t dataCount = getDataCount();
-	setDataCount(++dataCount);
-	return storeStruct(dataSource, sizeof(struct Data), dataCount);
+//	if(((struct Data*)dataSource)->meassure > bestStruct.meassure) copyStruct(dataSource, &bestStruct);
+	uint16_t dataCount = getDataCount() + 1;
+	setDataCount(dataCount);
+	return storeStruct(dataSource, sizeof(struct Data), dataCount-1);
 }
 
 
@@ -150,4 +150,19 @@ int memLeft() {
 	return (N25Q128A_FLASH_SIZE - N25Q128A_PAGE_SIZE) / (sizeof(struct Data) * getDataCount());
 }
 
+void clearMemory() {
+//	if (BSP_QSPI_Erase_Sector(0) != QSPI_OK) return QSPI_ERROR;
+//	if (BSP_QSPI_Erase_Sector(1) != QSPI_OK) return QSPI_ERROR;
+	if (BSP_QSPI_Erase_Chip() != QSPI_OK) return QSPI_ERROR;
+	setDataCount(0);
+}
 
+void listAllData() {
+	struct Data data;
+
+	for(int i = getDataCount(); i > 1; i--) {
+		loadStruct(&data, sizeof(struct Data), i - 1);
+		printf("[%3d] %02d:%02d:%02d:%03ld	%02d.%02d.20%02d -> %d\n\r", i, data.rtcTime.Hours, data.rtcTime.Minutes, data.rtcTime.Seconds, data.rtcTime.SubSeconds, data.rtcData.Date, data.rtcData.Month, data.rtcData.Year, data.meassure);
+	}
+	printf("\r\n\n");
+}
