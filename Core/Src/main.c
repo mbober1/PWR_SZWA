@@ -78,8 +78,10 @@ void actualTime() {
 	HAL_RTC_GetTime(&hrtc, &rtcTime, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &rtcData, RTC_FORMAT_BIN);
 	printf("Date: %02d.%02d.20%02d", rtcData.Date, rtcData.Month, rtcData.Year);
-	printf("	Time: %02d:%02d:%02d:%03ld\n\r", rtcTime.Hours, rtcTime.Minutes,
+	printf("	Time: %02d:%02d:%02d:%03ld", rtcTime.Hours, rtcTime.Minutes,
 			rtcTime.Seconds, rtcTime.SubSeconds);
+	if(Start) printf("		REC\n\r");
+	else printf("		STOP\n\r");
 }
 
 void menu() {
@@ -110,14 +112,17 @@ void menu() {
 
 		case '4':
 			getLastStruct();
+			break;
 
 		case '5':
 			printf("Zapamietane pomiary: \r\n");
 			listAllData();
+			break;
 
 		case '6':
 			printf("Zapisanych pomiarow %d, pozostalo miejsca na %d \r\n", getDataCount(), memLeft());
 			memLeft();
+			break;
 	}
 }
 
@@ -126,7 +131,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	switch(bp) {
 	case '1':
 		printf("\033[2J \r\n");
-		printf("Zacznynam czyscic pamiec... \r\n");
+		printf("Zacznynam czyscic pamiec... Potrwa to okolo 50s\r\n");
 		clearMemory();
 		break;
 
@@ -154,8 +159,7 @@ void acceler()
 			axisg[2] = (float) rawData[2] / 1600;
 			axisg[2] = axisg[2] - 9.8;
 			float W = sqrtf(pow(axisg[0], 2) + pow(axisg[1], 2) + pow(axisg[2], 2));
-			if(W > 0) nextMeasurement(W);
-
+			if(W > 0.11) nextMeasurement(W);
 }
 
 
