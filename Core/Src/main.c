@@ -52,9 +52,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-int16_t dane[3];
-int16_t W;
-int zdarzenia[6] = { 0, 0, 0, 0, 0, 0 };
+int16_t rawData[3];
+uint8_t bp;  //bit przychodzący
+int k = 0;
+volatile uint8_t newData;
+volatile uint8_t Start;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -66,37 +68,8 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 int _write(int file, char *ptr, int len) {
-	HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, 50);
+	HAL_UART_Transmit(&huart2, (uint8_t*) ptr, len, 50);
 	return len;
-}
-
-void memoryInfo() {
-	uint16_t dataCount = getDataCount();
-	printf("---------- \r\n");
-	printf("Data stored: %d\r\n", dataCount);
-	if(dataCount) {
-		printf("Memory left: %d\r\n", memLeft());
-		printf("Best data: \r\n");
-		infoStruct(&bestStruct);
-	}
-	printf("---------- \r\n\n");
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	if (htim == &htim6) {
-		LSM303C_AccReadXYZ(dane);
-
-		W = sqrt((dane[0] - 550) ^ 2 + (dane[1]) ^ 2 + (dane[2]) ^ 2);
-
-		if (W > 23)  zdarzenia[0]++;
-		if (W > 35)  zdarzenia[1]++;
-		if (W > 50)  zdarzenia[2]++;
-		if (W > 100) zdarzenia[3]++;
-		if (W > 200) zdarzenia[4]++;
-		if (W > 500) zdarzenia[5]++;
-
-		if (W > 23) nextMeasurement(W);
-	}
 }
 
 void actualTime() {
@@ -105,9 +78,87 @@ void actualTime() {
 	HAL_RTC_GetTime(&hrtc, &rtcTime, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &rtcData, RTC_FORMAT_BIN);
 	printf("Date: %02d.%02d.20%02d", rtcData.Date, rtcData.Month, rtcData.Year);
-	printf("	Time: %02d:%02d:%02d:%03ld\n\r", rtcTime.Hours, rtcTime.Minutes, rtcTime.Seconds, rtcTime.SubSeconds);
+	printf("	Time: %02d:%02d:%02d:%03ld\n\r", rtcTime.Hours, rtcTime.Minutes,
+			rtcTime.Seconds, rtcTime.SubSeconds);
+}
+
+void menu() {
+	printf("\033[2J");
+	actualTime();
+	printf("#### SZWA-Sejsmograf z wykorzystaniem akcelerometru #### \r\n");
+	printf("		1 -> Usun wszystkie pomiary \r\n");
+	printf("		2 -> Wyswietl najwyzszy pomiar \r\n");
+	printf("		3 -> Zatrzymaj/wznow pomiary \r\n");
+	printf("		4 -> Wyswietl ostatni pomiar \r\n");
+	printf("		5 -> Wyswietl wszystkie pomiary \r\n");
+	printf("		6 -> Wyswietl liczbe pomiarow \r\n\n");
+
+	switch(bp) {
+		case'1':
+			printf("Wyczyszczono pamiec \r\n");
+			break;
+
+		case '2':
+			printf("Najwyzszy pomiar to: \r\n");
+			infoStruct(&bestStruct);
+			break;
+
+		case '3':
+			if(Start) printf("Pomiary wznowione\r\n");
+			else printf("Pomiary zatrzymane\r\n");
+			break;
+
+		case '4':
+			getLastStruct();
+
+		case '5':
+			printf("Zapamietane pomiary: \r\n");
+			listAllData();
+
+		case '6':
+			printf("Zapisanych pomiarow %d, pozostalo miejsca na %d \r\n", getDataCount(), memLeft());
+			memLeft();
+	}
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+
+	switch(bp) {
+	case '1':
+		printf("\033[2J \r\n");
+		printf("Zacznynam czyscic pamiec... \r\n");
+		clearMemory();
+		break;
+
+	case '3':
+		Start = !Start;
+	}
+
+	HAL_UART_Receive_IT(&huart2, &bp, 1);
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	if (htim == &htim6) newData = 1;
+}
+
+
+
+void acceler()
+{
+	float axisg[3];
+	LSM303C_AccReadXYZ(rawData);
+			axisg[0] = (float) rawData[0] / 1600;
+			axisg[0] = axisg[0] - 1.3;
+			axisg[1] = (float) rawData[1] / 1600;
+			axisg[1] = axisg[1] ;
+			axisg[2] = (float) rawData[2] / 1600;
+			axisg[2] = axisg[2] - 9.8;
+			float W = sqrtf(pow(axisg[0], 2) + pow(axisg[1], 2) + pow(axisg[2], 2));
+			if(W > 0) nextMeasurement(W);
 
 }
+
+
 
 /* USER CODE END 0 */
 
@@ -147,25 +198,26 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	HAL_RTC_Init(&hrtc);
 	BSP_QSPI_Init();
-	LSM303C_AccInit(0x51);
-//	clearMemory();
+	LSM303C_AccInit(0x37);
+	HAL_UART_Receive_IT(&huart2, &bp, 1);
+	HAL_TIM_Base_Start_IT(&htim6);
+	uint32_t lastTime = 0;
   /* USER CODE END 2 */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
 	while (1) {
-		printf("\033[2J"); // clear console
-		actualTime(); // print actual time
-		nextMeasurement(421);
 
-		memoryInfo();
-//		printf("x: %3d  y: %3d z: %3d  Wektor: %3d \r\n", dane[0], dane[1], dane[2], W);
-//		printf("Liczba zdarzen stopnia:\r\n");
-//		for(int i = 0; i < 6; i++) printf("		%d: %d\r\n", i+1, zdarzenia[i]);
-		printf("\r\n\n");
-		listAllData();
+		if(Start==1 && newData==1){
+			acceler();
+			newData=0;
+		}
 
-		HAL_Delay(100);
+		if((HAL_GetTick()-lastTime) > 500) {
+			lastTime = HAL_GetTick();
+			menu();
+		}
 
     /* USER CODE END WHILE */
 

@@ -123,7 +123,7 @@ MAGNETO_DrvTypeDef Lsm303cDrv_magneto =
   */
 void LSM303C_AccInit(uint16_t InitStruct)
 {
-  uint8_t ctrl = 0x81;
+  uint8_t ctrl = 0x00;
   uint8_t ctrl1 = 0x81;
   /*  Low level init */
   ACCELERO_IO_Init();
@@ -131,10 +131,11 @@ void LSM303C_AccInit(uint16_t InitStruct)
   /* Write value to ACC MEMS CTRL_REG1 register */
   ctrl = (uint8_t) InitStruct;
   ACCELERO_IO_Write(LSM303C_CTRL_REG1_A, ctrl);
-
+  ACCELERO_IO_Write(LSM303C_CTRL_REG3_A, 0x80);
+    ACCELERO_IO_Write(LSM303C_FIFO_CTRL, 0x4);
   /* Write value to ACC MEMS CTRL_REG4 register */
   //ctrl = ((uint8_t) (InitStruct >> 8));
-  ACCELERO_IO_Write(LSM303C_CTRL_REG4_A, ctrl1);
+// ACCELERO_IO_Write(LSM303C_CTRL_REG4_A, ctrl1);
 }
 
 /**
