@@ -56,6 +56,7 @@ NVIC.PriorityGroup=NVIC_PRIORITYGROUP_4
 NVIC.SVCall_IRQn=true\:0\:0\:false\:false\:true\:true\:false
 NVIC.SysTick_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.TIM6_DAC_IRQn=true\:0\:0\:false\:false\:true\:true\:true
+NVIC.USART2_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.UsageFault_IRQn=true\:0\:0\:false\:false\:true\:true\:false
 PB2.GPIOParameters=GPIO_Speed,GPIO_PuPd,GPIO_Label,GPIO_ModeDefaultOutputPP
 PB2.GPIO_Label=LD_R [LED red]
