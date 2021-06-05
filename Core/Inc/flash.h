@@ -68,7 +68,7 @@ void infoStruct(const struct Data *data) {
 			data->rtcTime.Minutes, data->rtcTime.Seconds,
 			data->rtcTime.SubSeconds);
 	printf("	Meassure: %f\r\n", data->meassure);
-	printf("	Zdarzenie klasy %d", eventType(data->meassure));
+	printf("	Zdarzenie klasy %d\r\n", eventType(data->meassure));
 }
 
 /**
@@ -101,7 +101,7 @@ uint8_t loadStruct(void *dataDestination, size_t size, uint16_t place) {
 	uint16_t dataCount = getDataCount();
 
 	if (place > dataCount) {
-		printf("There is only %d elements, not %d", dataCount, place);
+		printf("Jest tylko %d elementow, nie %d", dataCount, place);
 		return QSPI_ERROR;
 	}
 
@@ -123,11 +123,11 @@ uint8_t loadStruct(void *dataDestination, size_t size, uint16_t place) {
  */
 void getLastStruct() {
 	struct Data data;
-	loadStruct(&data, sizeof(struct Data), getDataCount() - 1);
-	printf(" %02d:%02d:%02d:%03ld	%02d.%02d.20%02d -> %d\n\r",
-			data.rtcTime.Hours, data.rtcTime.Minutes, data.rtcTime.Seconds,
-			data.rtcTime.SubSeconds, data.rtcData.Date, data.rtcData.Month,
-			data.rtcData.Year, data.meassure);
+	uint16_t dataCount = getDataCount();
+	if(dataCount) {
+		loadStruct(&data, sizeof(struct Data), dataCount - 1);
+		infoStruct(&data);
+	} else printf("Nie ma zadnych danych!\r\n");
 }
 
 
@@ -151,7 +151,7 @@ uint8_t storeNextStruct(void *dataSource) {
  * @param data Measurement.
  * @return QSPI Error code.
  */
-uint8_t nextMeasurement(uint16_t data) {
+uint8_t nextMeasurement(float data) {
 	struct Data tmp;
 	HAL_RTC_GetTime(&hrtc, &tmp.rtcTime, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &tmp.rtcData, RTC_FORMAT_BIN);
