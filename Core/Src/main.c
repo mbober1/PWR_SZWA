@@ -92,7 +92,7 @@ void menu() {
 	printf("		2 -> Wyswietl najwyzszy pomiar \r\n");
 	printf("		3 -> Zatrzymaj/wznow pomiary \r\n");
 	printf("		4 -> Wyswietl ostatni pomiar \r\n");
-	printf("		5 -> Wyswietl wszystkie pomiary \r\n");
+	printf("		5 -> Wyswietl 10 ostatnich pomiarow \r\n");
 	printf("		6 -> Wyswietl liczbe pomiarow \r\n\n");
 
 	switch(bp) {

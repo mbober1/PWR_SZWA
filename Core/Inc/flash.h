@@ -175,15 +175,18 @@ void clearMemory() {
 void listAllData() {
 	struct Data data;
 	uint16_t dataCount = getDataCount();
-	if(dataCount > 10) dataCount = 10;
+	uint8_t i;
+	if(dataCount > 10)  i = 10;
+	else i = dataCount;
 
-	for (int i = dataCount; i > 0; i--) {
-		loadStruct(&data, sizeof(struct Data), i - 1);
-		printf("[%3d] %02d:%02d:%02d:%03ld	%02d.%02d.20%02d -> %f\n\r", i,
+	while (i) {
+		loadStruct(&data, sizeof(struct Data), dataCount - 11 + i);
+		printf("[%3d] %02d:%02d:%02d:%03ld	%02d.%02d.20%02d -> %f\n\r", dataCount - 10 + i,
 				data.rtcTime.Hours, data.rtcTime.Minutes, data.rtcTime.Seconds,
 				data.rtcTime.SubSeconds, data.rtcData.Date, data.rtcData.Month,
 				data.rtcData.Year, data.meassure);
 		if(i > 10) break;
+		else i--;
 	}
 	printf("\r\n\n");
 }
