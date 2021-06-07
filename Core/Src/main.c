@@ -52,11 +52,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-int16_t rawData[3];
 uint8_t bp;  //bit przychodzący
-int k = 0;
-volatile uint8_t newData;
-volatile uint8_t Start;
+volatile uint8_t newData; // flaga gotowosci pomiaru
+volatile uint8_t record;  // flaga rejestrowania pomiarow
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -67,6 +65,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 int _write(int file, char *ptr, int len) {
 	HAL_UART_Transmit(&huart2, (uint8_t*) ptr, len, 50);
 	return len;
@@ -80,7 +79,7 @@ void actualTime() {
 	printf("Date: %02d.%02d.20%02d", rtcData.Date, rtcData.Month, rtcData.Year);
 	printf("	Time: %02d:%02d:%02d:%03ld", rtcTime.Hours, rtcTime.Minutes,
 			rtcTime.Seconds, rtcTime.SubSeconds);
-	if(Start) printf("		REC\n\r");
+	if(record) printf("		REC\n\r");
 	else printf("		STOP\n\r");
 }
 
@@ -106,7 +105,7 @@ void menu() {
 			break;
 
 		case '3':
-			if(Start) printf("Pomiary wznowione\r\n");
+			if(record) printf("Pomiary wznowione\r\n");
 			else printf("Pomiary zatrzymane\r\n");
 			break;
 
@@ -136,7 +135,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		break;
 
 	case '3':
-		Start = !Start;
+		record = !record;
+		break;
 	}
 
 	HAL_UART_Receive_IT(&huart2, &bp, 1);
@@ -151,15 +151,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 void acceler()
 {
 	float axisg[3];
+	int16_t rawData[3];
+
 	LSM303C_AccReadXYZ(rawData);
-			axisg[0] = (float) rawData[0] / 1600;
-			axisg[0] = axisg[0] - 1.3;
-			axisg[1] = (float) rawData[1] / 1600;
-			axisg[1] = axisg[1] ;
-			axisg[2] = (float) rawData[2] / 1600;
-			axisg[2] = axisg[2] - 9.8;
-			float W = sqrtf(pow(axisg[0], 2) + pow(axisg[1], 2) + pow(axisg[2], 2));
-			if(W > 0.11) nextMeasurement(W);
+	axisg[0] = (float) rawData[0] / 1600;
+	axisg[0] = axisg[0] - 1.33;
+	axisg[1] = (float) rawData[1] / 1600;
+	axisg[1] = axisg[1];
+	axisg[2] = (float) rawData[2] / 1600;
+	axisg[2] = axisg[2] - 10.28;
+	float W = sqrtf(pow(axisg[0], 2) + pow(axisg[1], 2) + pow(axisg[2], 2));
+	if(W > 0.11) nextMeasurement(W);
 }
 
 
@@ -200,12 +202,12 @@ int main(void)
   MX_RTC_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-	HAL_RTC_Init(&hrtc);
-	BSP_QSPI_Init();
-	LSM303C_AccInit(0x37);
-	HAL_UART_Receive_IT(&huart2, &bp, 1);
-	HAL_TIM_Base_Start_IT(&htim6);
-	uint32_t lastTime = 0;
+  HAL_RTC_Init(&hrtc);
+  BSP_QSPI_Init();
+  LSM303C_AccInit(0x37);
+  HAL_UART_Receive_IT(&huart2, &bp, 1);
+  HAL_TIM_Base_Start_IT(&htim6);
+  uint32_t lastTime = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -213,7 +215,7 @@ int main(void)
 
 	while (1) {
 
-		if(Start==1 && newData==1){
+		if(record == 1 && newData == 1){
 			acceler();
 			newData=0;
 		}
